@@ -66,6 +66,7 @@ public class TestSentiment {
         System.out.println(sentiment);
         SimpleMatrix sentiment_new = RNNCoreAnnotations.getPredictions(tree); 
         System.out.println(sentiment_new);
+        System.out.println(sentiment_new.getMatrix().getData()[0]);
     }
 
 }
