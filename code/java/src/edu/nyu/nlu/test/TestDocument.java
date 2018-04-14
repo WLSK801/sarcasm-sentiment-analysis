@@ -16,20 +16,24 @@ public class TestDocument {
         CsvReader reader = new CsvReader();
         List<String[]> test = new ArrayList<>();
         try {
-            test = reader.read("./data/train.csv");
+            test = reader.read("./data/test.csv");
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
         List<String[]> newTest = new ArrayList<>(test.size());
         for (String[] row : test) {
-            String val = find.find(2, row[0]);
-            String[] newRow = new String[]{row[0], row[1], val};
+            List<String> pairs = find.findWithLabel(0, row[0]);
+            StringBuilder sb = new StringBuilder();
+            for (String pair : pairs) {
+                sb.append(pair).append("\t");
+            }
+            String[] newRow = new String[]{row[0], row[1], sb.toString()};
             newTest.add(newRow);
         }
         CsvWriter writer = new CsvWriter();
         try {
-            writer.write(newTest, new String[]{"text", "label", "number of structures"}, "./data/train_return.csv");
+            writer.write(newTest, new String[]{"text", "label", "pairs_diff"}, "./data/test_return_pair.csv");
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

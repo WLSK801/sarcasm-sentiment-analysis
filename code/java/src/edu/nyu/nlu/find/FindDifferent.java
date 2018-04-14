@@ -14,10 +14,10 @@ import edu.stanford.nlp.trees.Tree;
 
 public class FindDifferent {
 
-    private Properties props;
-
     private StanfordCoreNLP pipeline;
-
+    
+    private static final double[] SCALE = new double[]{1d, 7d, 13d, 19d, 25d};
+    
     public FindDifferent() {
         // set up pipeline properties
         Properties props = new Properties();
@@ -98,23 +98,26 @@ public class FindDifferent {
         }
         return count;
     }
-    private void recursiveFindWithLabel(Tree treeNode, int diff, List<String> paitInfor) {
+    private void recursiveFindWithLabel(Tree treeNode, double diff, List<String> paitInfor) {
         if (treeNode.isLeaf())
             return;
         List<Tree> children = treeNode.getChildrenAsList();
         if (children.size() <= 0) return;
-        int[] sentimentArray = new int[children.size()];
+        double[] sentimentArray = new double[children.size()];
         int index = 0;
         for (Tree child : children) {
-            int sentiment = RNNCoreAnnotations.getPredictedClass(child);
+            double sentiment = getNewSentiment(child);
             sentimentArray[index++] = sentiment;
         }
         for (int i = 0; i < sentimentArray.length; i++) {
+            if (sentimentArray[i] < 0) continue;
             for (int j = i + 1; j < sentimentArray.length; j++) {
-                int currentDifferent = Math.abs(sentimentArray[i] - sentimentArray[j]);
+                if (sentimentArray[j] < 0) continue;
+                double currentDifferent = Math.abs(sentimentArray[i] - sentimentArray[j]);
                 if (currentDifferent >= diff) {
                     String pair =  children.get(i).label().toString() + "," + 
-                 children.get(j).label().toString() + "," + currentDifferent;
+                 children.get(j).label().toString() + "," + 
+                            String.format("%.2f", currentDifferent);
                     paitInfor.add(pair);
                 }
             }
@@ -163,7 +166,16 @@ public class FindDifferent {
             recursiveCheckhLabel(child, paitInfor);
         }
         return;
+    }
+    private double getNewSentiment(Tree tree) {
+        SimpleMatrix sentiment = RNNCoreAnnotations.getPredictions(tree);
+        double sum = 0.0d;
+        if (sentiment == null) return -1d;
+        double[] data = sentiment.getMatrix().getData();
         
-        
+        for (int i = 0; i < data.length; i++) {
+            sum += data[i] * SCALE[i];
+        }
+        return sum;
     }
 }
