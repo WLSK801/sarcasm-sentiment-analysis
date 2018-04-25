@@ -10,9 +10,16 @@ import csv
 import pandas as pd
 
 # data path
-dirr = "<data>"
+dirr = "G:\\research\\sarcasm\\code\\data\\pol"
 # output path
-O_dirr = "<data>"
+O_dirr = "G:\\NYU_Class\\NLU\\project\\"
+
+
+def clean_str(string):
+  # string = re.sub(r"[^A-Za-z0-9(),!?\.\'\"]", " ", string)
+  string = re.sub(r"[^A-Za-z0-9\']", " ", string)
+  return string.strip()
+
 
 def load_sarc_responses(train_file, test_file, comment_file, lower=True):
   '''loads SARC data from csv files
@@ -85,9 +92,13 @@ train_lab = train_labels[0] + train_labels[1]
 test_text = test_docs[0] + test_docs[1]
 test_lab = test_labels[0] + test_labels[1]
 
-train_df = [("data", train_text), ("label", train_lab)]
-test_df = [("data", test_text), ("label", test_lab)]
+# clean text
+train_text_new = [clean_str(train_text[i]) for i in range(len(train_text))]
+test_text_new = [clean_str(test_text[i]) for i in range(len(test_text))]
+
+train_df = [("data", train_text_new), ("label", train_lab)]
+test_df = [("data", test_text_new), ("label", test_lab)]
 train_df = pd.DataFrame.from_items(train_df)
 test_df = pd.DataFrame.from_items(test_df)
-train_df.to_csv(O_dirr + "train.csv", encoding='utf-8', index=False)
-test_df.to_csv(O_dirr + "test.csv", encoding='utf-8', index=False)
+train_df.to_csv(O_dirr + "train_clean.csv", encoding='utf-8', index=False)
+test_df.to_csv(O_dirr + "test_clean.csv", encoding='utf-8', index=False)
